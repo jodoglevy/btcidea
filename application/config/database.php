@@ -48,25 +48,24 @@
 $active_group = 'default';
 $active_record = TRUE;
 
-$conn_str = getenv("SQLAZURECONNSTR_btcDbConnection");
+$conn_str = getenv("MYSQLCONNSTR_BtcDbConnection");
 
 $conn_array = array();
 $parts = explode(";", $conn_str);
 
 foreach($parts as $part){
 	$temp = explode("=", $part);
-    if(count($temp) > 1) $conn_array[$temp[0]] = $temp[1];
+    
+    if(count($temp) > 1) {
+        $conn_array[$temp[0]] = $temp[1];
+    }
 }
 
-// Data Source=tcp:host,port;
-$conn_array['Hostname'] = explode(":", $conn_array['Data Source'])[1];
-$conn_array['Hostname'] = explode(",", $conn_array['Hostname'])[0];
-
-$db['default']['hostname'] = $conn_array['Hostname'];
+$db['default']['hostname'] = $conn_array['Data Source'];
 $db['default']['username'] = $conn_array['User Id'];
 $db['default']['password'] = $conn_array['Password'];
-$db['default']['database'] = $conn_array['Initial Catalog'];
-$db['default']['dbdriver'] = 'mssql';
+$db['default']['database'] = $conn_array['Database'];
+$db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = TRUE;
 $db['default']['db_debug'] = TRUE;
