@@ -55,7 +55,7 @@ $parts = explode(";", $conn_str);
 
 foreach($parts as $part){
 	$temp = explode("=", $part);
-    $conn_array[$temp[0]] = $temp[1];
+    if(count($temp) > 1) $conn_array[$temp[0]] = $temp[1];
 }
 
 // Data Source=tcp:host,port;
