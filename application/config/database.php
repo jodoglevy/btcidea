@@ -60,7 +60,7 @@ foreach($parts as $part){
 
 // Data Source=tcp:host,port;
 $conn_array['Hostname'] = explode(":", $conn_array['Data Source'])[1];
-$conn_array['Hostname'] = explode(",", conn_array['Hostname'])[0];
+$conn_array['Hostname'] = explode(",", $conn_array['Hostname'])[0];
 
 $db['default']['hostname'] = $conn_array['Hostname'];
 $db['default']['username'] = $conn_array['User Id'];
