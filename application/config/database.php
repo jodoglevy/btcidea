@@ -58,7 +58,7 @@ foreach($parts as $part){
     $conn_array[$temp[0]] = $temp[1];
 }
 
-#Data Source=tcp:host,port;
+// Data Source=tcp:host,port;
 $conn_array['Hostname'] = explode(":", $conn_array['Data Source'])[1];
 $conn_array['Hostname'] = explode(",", conn_array['Hostname'])[0];
 
