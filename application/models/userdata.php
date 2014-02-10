@@ -1,6 +1,4 @@
 <?php
-// TODO: require_once('AWSSDKforPHP/sdk.class.php');
-
 class UserData extends CI_Model {
 	function __construct() {
         parent::__construct();
@@ -32,7 +30,8 @@ class UserData extends CI_Model {
 	}
 	
 	function sendForgotPasswordRequest($fromEmail, $fypURL, $email) {
-		$this->load->database();
+		$this->load->model('awsses');
+        $this->load->database();
 		
 		$email = strtolower($email);
 		
@@ -45,10 +44,10 @@ class UserData extends CI_Model {
 		$data = $results->row_array(0);
 		
 		$to = $email;
-		$subject = "DialASmile: Forgot Your Password";
+		$subject = "BtcIdea: Forgot Your Password";
 		$message = "To change your password, please go to " . $fypURL . "?email=" . $email . "&token=" . $data['Token'] ;
 		
-		amazonSesMail($fromEmail, $to, $subject, $message);
+		$this->awsses->sendEmail($to, $subject, $message);
 		
 		return NULL;
 	}
@@ -128,22 +127,6 @@ class UserData extends CI_Model {
 		return $this->session->userdata('userID');
 	}
 	
-}
-
-function amazonSesMail($from, $to, $subject, $message) {
-    $amazonSes = new AmazonSES();
-
-    $response = $amazonSes->send_email($from,
-        array('ToAddresses' => array($to)),
-        array(
-            'Subject.Data' => $subject,
-            'Body.Text.Data' => $message,
-        )
-    );
-	
-    if (!$response->isOK()) {
-		// handle error
-    }
 }
 
 /**
