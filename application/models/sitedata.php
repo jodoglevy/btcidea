@@ -5,7 +5,7 @@ class SiteData extends CI_Model {
 		$username = $this->userdata->getLoggedInUserEmail();
 		
 		if($username) {
-			$userHTML = '<a class="btn" href="/campaign"><i class="icon-user"></i> ' . $username . '</a>';
+			$userHTML = '<a class="btn" href="/account"><i class="icon-user"></i> ' . $username . '</a>';
 		}
 		else {
 			$userHTML = '<a class="btn" href="/site/login">Login</a>';

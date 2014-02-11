@@ -23,7 +23,7 @@ class UserData extends CI_Model {
                 . " Password=" . $this->db->escape($passwordHash)
                 . ", Salt=" . $this->db->escape($salt)
                 . ", Token=" . $this->db->escape($newToken)
-                . " WHERE EmailAddress = " . $this->db->escape($email) . " AND Token = " . $this->db->escape($token)
+                . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)) . " AND Token = " . $this->db->escape($token)
             );
             
             return NULL;
@@ -39,7 +39,7 @@ class UserData extends CI_Model {
 		if(strlen($email) < 1) return "Please enter an email address";
 		elseif(!isValidEmailAddress($email)) return "Please enter a valid email address";
 		else {
-            $results = $this->db->query("SELECT * FROM tbl_users WHERE EmailAddress = " . $this->db->escape($email));
+            $results = $this->db->query("SELECT * FROM tbl_users WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)));
             
             if($results->num_rows() === 0) return NULL; // Don't show error if user does not exist. Otherwise we are exposing users using this site
             $data = $results->row_array(0);
@@ -64,15 +64,18 @@ class UserData extends CI_Model {
 		if(strlen($passwordPlainText) < 1) return "Please enter a password";
 		if($passwordPlainText != $passwordPlainTextConfirm) return "Your password and your confirm password are not the same";
 		else {
-            $results = $this->db->query("SELECT * FROM tbl_users WHERE EmailAddress = " . $this->db->escape($email));
+            $emailHash = hash("sha256", $email);
+
+            $results = $this->db->query("SELECT * FROM tbl_users WHERE EmailAddressHash = " . $this->db->escape($emailHash));
             if($results->num_rows() !== 0) return "There is already an account with this email address";
             
             $salt = md5(uniqid(rand(), true));
             $token = md5(uniqid(rand(), true));
             $passwordHash = hash("sha256", $passwordPlainText . $salt);
             
-            $this->db->query("INSERT INTO tbl_users (EmailAddress, Password, Salt, Token, Created) VALUES ("
-                .$this->db->escape($email)
+            $this->db->query("INSERT INTO tbl_users (EmailAddress, EmailAddressHash, Password, Salt, Token, Created) VALUES ("
+                .$this->db->escape($this->encrypt->encode($email))
+                .",".$this->db->escape($emailHash)
                 .",".$this->db->escape($passwordHash)
                 .",".$this->db->escape($salt)
                 .",".$this->db->escape($token)
@@ -92,7 +95,7 @@ class UserData extends CI_Model {
 		if(!isValidEmailAddress($email)) return "Please enter a valid email address";
 		if(strlen($passwordPlainText) < 1) return "Please enter a password";
 		else {
-            $results = $this->db->query("SELECT * FROM tbl_users WHERE EmailAddress = " . $this->db->escape($email));
+            $results = $this->db->query("SELECT * FROM tbl_users WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)));
             if($results->num_rows() === 0) return "Login credentials are invalid";
             
             $data = $results->row_array(0);
