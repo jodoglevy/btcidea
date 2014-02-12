@@ -4,6 +4,26 @@ class UserData extends CI_Model {
         parent::__construct();
         $this->load->library('session');
     }
+    
+    function confirmEmail($email, $token) {
+		$this->load->database();
+		
+		$email = strtolower($email);
+		
+		if(strlen($email) < 1) return "Please enter an email address";
+		elseif(!isValidEmailAddress($email)) return "Please enter a valid email address";
+		else {
+            $newToken = md5(uniqid(rand(), true));
+            
+            $results = $this->db->query("UPDATE tbl_users SET"
+                . ", IsConfirmed=" . $this->db->escape(1)
+                . ", Token=" . $this->db->escape($newToken)
+                . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)) . " AND Token = " . $this->db->escape($token)
+            );
+            
+            return NULL;
+        }
+    }
 	
 	function changePassword($email, $token, $passwordPlainText, $passwordPlainTextConfirm) {
 		$this->load->database();
@@ -44,25 +64,29 @@ class UserData extends CI_Model {
             if($results->num_rows() === 0) return NULL; // Don't show error if user does not exist. Otherwise we are exposing users using this site
             $data = $results->row_array(0);
             
-            $to = $email;
-            $subject = "BtcIdea: Forgot Your Password";
-            $message = "To change your password, please go to " . $fypURL . "?email=" . $email . "&token=" . $data['Token'] ;
-            
-            $this->awsses->sendEmail($to, $subject, $message);
-            
-            return NULL;
+            if(!$data["IsConfirmed"]) return "You must confirm this email address before you can reset your password. A confirmation was emailed to this email address.";
+            else {
+                $to = $email;
+                $subject = "BtcIdea: Forgot Your Password";
+                $message = "To change your password, please go to " . $fypURL . "?email=" . $email . "&token=" . $data['Token'] ;
+                
+                $this->awsses->sendEmail($to, $subject, $message);
+                
+                return NULL;
+            }
         }
 	}
 	
-	function add($email, $passwordPlainText, $passwordPlainTextConfirm) {
-		$this->load->database();
+	function add($email, $passwordPlainText, $passwordPlainTextConfirm, $confirmEmailURL = NULL) {
+		$this->load->model('awsses');
+        $this->load->database();
 		
 		$email = strtolower($email);
 		
 		if(strlen($email) < 1) return "Please enter an email address";
-		if(!isValidEmailAddress($email)) return "Please enter a valid email address";
-		if(strlen($passwordPlainText) < 1) return "Please enter a password";
-		if($passwordPlainText != $passwordPlainTextConfirm) return "Your password and your confirm password are not the same";
+		elseif(!isValidEmailAddress($email)) return "Please enter a valid email address";
+		elseif(strlen($passwordPlainText) < 1) return "Please enter a password";
+		elseif($passwordPlainText != $passwordPlainTextConfirm) return "Your password and your confirm password are not the same";
 		else {
             $emailHash = hash("sha256", $email);
 
@@ -81,6 +105,14 @@ class UserData extends CI_Model {
                 .",".$this->db->escape($token)
                 .",NOW())"
             );
+            
+            if($confirmEmailURL) {
+                $to = $email;
+                $subject = "BtcIdea: Confirm Your Email Address";
+                $message = "To confirm your email address, please go to " . $confirmEmailURL . "?email=" . $email . "&token=" . $token;
+            
+                $this->awsses->sendEmail($to, $subject, $message);
+            }
             
             return NULL;
         }
@@ -102,15 +134,17 @@ class UserData extends CI_Model {
             $passwordHash = hash("sha256", $passwordPlainText . $data['Salt']);
             
             if($passwordHash != $data['Password']) return "Login credentials are invalid";
-            
-            $sessionData = array(
-                'userID' => $data['Key'],
-                'email' => $email,
-                'loggedIn' => TRUE
-            );
-            
-            $this->session->set_userdata($sessionData);
-            return NULL;
+            elseif(!$data["IsConfirmed"]) return "You must confirm this email address to log in. A confirmation was emailed to this email address.";
+            else {
+                $sessionData = array(
+                    'userID' => $data['Key'],
+                    'email' => $email,
+                    'loggedIn' => TRUE
+                );
+                
+                $this->session->set_userdata($sessionData);
+                return NULL;
+            }
         }
 	}
 	

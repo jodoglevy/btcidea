@@ -123,16 +123,16 @@ class Site extends CI_Controller
 			$error = $this->userdata->add(
 				$email,
 				$password,
-				$password2
+				$password2,
+                "https://" . getDomain() . "/site/confirmemail"
 			);
 			
 			if(!$error) {
-				$this->userdata->login(
-					$email,
-					$password
-				);
-				
-				return redirect('/account');
+				return $this->load->view('site/confirmemailsent', array(
+					'email' => $email,
+					'header' => $this->sitedata->header(),
+					'footer' => $this->sitedata->footer()
+				));
 			}
 		}
 		
