@@ -210,7 +210,7 @@ class Site extends CI_Controller
             // forgot your password request submitted
         
 			$error = $this->userdata->sendForgotPasswordRequest(
-				"https://btcidea.azurewebsites.net/site/passwordrecover",
+				"https://" . getDomain() . "/site/passwordrecover",
 				$email
 			);
 			
@@ -234,5 +234,11 @@ class Site extends CI_Controller
             'footer' => $this->sitedata->footer()
         ));
 	}
+}
+
+function getDomain()
+{
+    $CI =& get_instance();
+    return preg_replace("/^[\w]{2,6}:\/\/([\w\d\.\-]+).*$/","$1", $CI->config->slash_item('base_url'));
 }
 ?>
