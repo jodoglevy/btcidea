@@ -234,6 +234,18 @@ class Site extends CI_Controller
             'footer' => $this->sitedata->footer()
         ));
 	}
+    
+    public function confirmEmail() {
+        $this->load->model('userdata');
+        $this->load->helper('url');
+        
+        $email = $this->input->get('email', TRUE);
+        $token = $this->input->get('token', TRUE);
+        
+        $error = $this->userdata->confirmEmail($email, $token);
+
+        return redirect('/site/login');
+    }
 }
 
 function getDomain()

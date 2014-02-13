@@ -16,7 +16,7 @@ class UserData extends CI_Model {
             $newToken = md5(uniqid(rand(), true));
             
             $results = $this->db->query("UPDATE tbl_users SET"
-                . ", IsConfirmed=" . $this->db->escape(1)
+                . " IsConfirmed=" . $this->db->escape(1)
                 . ", Token=" . $this->db->escape($newToken)
                 . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)) . " AND Token = " . $this->db->escape($token)
             );
