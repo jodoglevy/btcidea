@@ -80,6 +80,9 @@ class Site extends CI_Controller
 			else if($error == "Login credentials are invalid") {
 				$error .= ".<br />Forgot your password? <a href='/site/fyp?email=" . $email . "'>Generate a new one.</a>";
 			}
+            else if($error == "You must confirm this email address to log in.") {
+                $error .= "<br /><a href='/site/resendconfirmationemail?email=" . $email . "'>Resend confirmation email</a>";
+            }
 		}
 		
         // initial page load or error logging in
@@ -221,6 +224,9 @@ class Site extends CI_Controller
 					'footer' => $this->sitedata->footer()
 				));
 			}
+            else if($error == "You must confirm this email address before you can reset your password.") {
+                $error .= "<br /><a href='/site/resendconfirmationemail?email=" . $email . "'>Resend confirmation email</a>";
+            }
 		}
 		
         // initial page load or error submitting forgot your password request
@@ -245,6 +251,33 @@ class Site extends CI_Controller
         $error = $this->userdata->confirmEmail($email, $token);
 
         return redirect('/site/login');
+    }
+    
+    public function resendConfirmationEmail() {
+        $this->load->model('sitedata');
+		$this->load->model('userdata');
+        
+		$email = $this->input->get('email', TRUE);
+        
+		if($email) {        
+			$token = $this->userdata->resetToken(
+				$email
+			);
+            
+            if($token) {
+                $this->userdata->sendConfirmationEmail(
+                    $email,
+                    $token,
+                    "https://" . getDomain() . "/site/confirmemail"
+                );
+            }
+			
+            return $this->load->view('site/confirmemailsent', array(
+                'email' => $email,
+                'header' => $this->sitedata->header(),
+                'footer' => $this->sitedata->footer()
+            ));
+		}
     }
 }
 
