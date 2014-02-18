@@ -49,13 +49,11 @@ class UserData extends CI_Model {
 		elseif(strlen($passwordPlainText) < 1) return "Please enter a password";
 		elseif($passwordPlainText != $passwordPlainTextConfirm) return "Your password and your confirm password are not the same";
 		else {
-            $salt = md5(uniqid(rand(), true));
             $newToken = md5(uniqid(rand(), true));
-            $passwordHash = hash("sha256", $passwordPlainText . $salt);
+            $passwordHash = $this->getBcryptHash($passwordPlainText);
             
             $results = $this->db->query("UPDATE tbl_users SET"
                 . " Password=" . $this->db->escape($passwordHash)
-                . ", Salt=" . $this->db->escape($salt)
                 . ", Token=" . $this->db->escape($newToken)
                 . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)) . " AND Token = " . $this->db->escape($token)
             );
@@ -106,15 +104,13 @@ class UserData extends CI_Model {
             $results = $this->db->query("SELECT * FROM tbl_users WHERE EmailAddressHash = " . $this->db->escape($emailHash));
             if($results->num_rows() !== 0) return "There is already an account with this email address";
             
-            $salt = md5(uniqid(rand(), true));
             $token = md5(uniqid(rand(), true));
-            $passwordHash = hash("sha256", $passwordPlainText . $salt);
+            $passwordHash = $this->getBcryptHash($passwordPlainText);
             
-            $this->db->query("INSERT INTO tbl_users (EmailAddress, EmailAddressHash, Password, Salt, Token, Created) VALUES ("
+            $this->db->query("INSERT INTO tbl_users (EmailAddress, EmailAddressHash, Password, Token, Created) VALUES ("
                 .$this->db->escape($this->encrypt->encode($email))
                 .",".$this->db->escape($emailHash)
                 .",".$this->db->escape($passwordHash)
-                .",".$this->db->escape($salt)
                 .",".$this->db->escape($token)
                 .",NOW())"
             );
@@ -150,9 +146,8 @@ class UserData extends CI_Model {
             if($results->num_rows() === 0) return "Login credentials are invalid";
             
             $data = $results->row_array(0);
-            $passwordHash = hash("sha256", $passwordPlainText . $data['Salt']);
             
-            if($passwordHash != $data['Password']) return "Login credentials are invalid";
+            if(!$this->verifyPasswordAgainstBcryptHash($passwordPlainText, $data['Password'])) return "Login credentials are invalid";
             elseif(!$data["IsConfirmed"]) return "You must confirm this email address to log in.";
             else {
                 $sessionData = array(
@@ -184,7 +179,16 @@ class UserData extends CI_Model {
 	
 	function getLoggedInUserID() {
 		return $this->session->userdata('userID');
-	}	
+	}
+    
+    function getBcryptHash($password) {
+        $options = array('cost' => 11);
+        return password_hash($password, PASSWORD_BCRYPT, $options);
+    }
+
+    function verifyPasswordAgainstBcryptHash($password, $hash) {
+        return password_verify($password, $hash);
+    }
 }
 
 /**
@@ -194,5 +198,4 @@ class UserData extends CI_Model {
 function isValidEmailAddress($email) {
 	return filter_var($email, FILTER_VALIDATE_EMAIL) && preg_match('/@.+\./', $email);
 }
-
 ?>
