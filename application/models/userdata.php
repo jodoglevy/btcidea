@@ -13,15 +13,23 @@ class UserData extends CI_Model {
 		if(strlen($email) < 1) return "Please enter an email address";
 		elseif(!isValidEmailAddress($email)) return "Please enter a valid email address";
 		else {
-            $newToken = md5(uniqid(rand(), true));
-            
-            $results = $this->db->query("UPDATE tbl_users SET"
-                . " IsConfirmed=" . $this->db->escape(1)
-                . ", Token=" . $this->db->escape($newToken)
-                . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)) . " AND Token = " . $this->db->escape($token)
+            $results = $this->db->query("SELECT * FROM tbl_users WHERE"
+                . " EmailAddressHash = " . $this->db->escape(hash("sha256", $email))
+                . " AND Token = " . $this->db->escape($token)
             );
             
-            return NULL;
+            if($results->num_rows() === 0) return "The email address or token is invalid";
+            else {
+                $newToken = md5(uniqid(rand(), true));
+            
+                $results = $this->db->query("UPDATE tbl_users SET"
+                    . " IsConfirmed=" . $this->db->escape(1)
+                    . ", Token=" . $this->db->escape($newToken)
+                    . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)) . " AND Token = " . $this->db->escape($token)
+                );
+            
+                return NULL;
+            }
         }
     }
     
@@ -32,6 +40,7 @@ class UserData extends CI_Model {
         
         $results = $this->db->query("UPDATE tbl_users SET"
             . " Token=" . $this->db->escape($token)
+            . ", TokenCreated = NOW()"
             . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email))
         );
         
@@ -49,16 +58,32 @@ class UserData extends CI_Model {
 		elseif(strlen($passwordPlainText) < 1) return "Please enter a password";
 		elseif($passwordPlainText != $passwordPlainTextConfirm) return "Your password and your confirm password are not the same";
 		else {
-            $newToken = md5(uniqid(rand(), true));
-            $passwordHash = $this->getBcryptHash($passwordPlainText);
-            
-            $results = $this->db->query("UPDATE tbl_users SET"
-                . " Password=" . $this->db->escape($passwordHash)
-                . ", Token=" . $this->db->escape($newToken)
-                . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)) . " AND Token = " . $this->db->escape($token)
+            $results = $this->db->query("SELECT * FROM tbl_users WHERE"
+                . " EmailAddressHash = " . $this->db->escape(hash("sha256", $email))
+                . " AND Token = " . $this->db->escape($token)
             );
             
-            return NULL;
+            if($results->num_rows() === 0) return "The email address or token is invalid";
+            else {
+                $data = $results->row_array(0);
+                
+                if(strtotime('- 3 days') > strtotime($data["TokenCreated"])) {
+                    return "This password recovery request has expired";
+                }
+                else {
+                    $newToken = md5(uniqid(rand(), true));
+                    $passwordHash = $this->getBcryptHash($passwordPlainText);
+                    
+                    $results = $this->db->query("UPDATE tbl_users SET"
+                        . " Password=" . $this->db->escape($passwordHash)
+                        . ", Token=" . $this->db->escape($newToken)
+                        . ", TokenCreated = NOW()"
+                        . " WHERE EmailAddressHash = " . $this->db->escape(hash("sha256", $email)) . " AND Token = " . $this->db->escape($token)
+                    );
+                    
+                    return NULL;
+                }
+            }
         }
     }
 	
@@ -78,9 +103,11 @@ class UserData extends CI_Model {
             
             if(!$data["IsConfirmed"]) return "You must confirm this email address before you can reset your password.";
             else {
+                $newToken = $this->resetToken($email);
+
                 $to = $email;
                 $subject = "BtcIdea: Forgot Your Password";
-                $message = "To change your password, please go to " . $fypURL . "?email=" . $email . "&token=" . $data['Token'] ;
+                $message = "To change your password, please go to " . $fypURL . "?email=" . $email . "&token=" . $newToken;
                 
                 $this->awsses->sendEmail($to, $subject, $message);
                 
@@ -107,11 +134,12 @@ class UserData extends CI_Model {
             $token = md5(uniqid(rand(), true));
             $passwordHash = $this->getBcryptHash($passwordPlainText);
             
-            $this->db->query("INSERT INTO tbl_users (EmailAddress, EmailAddressHash, Password, Token, Created) VALUES ("
+            $this->db->query("INSERT INTO tbl_users (EmailAddress, EmailAddressHash, Password, Token, TokenCreated, Created) VALUES ("
                 .$this->db->escape($this->encrypt->encode($email))
                 .",".$this->db->escape($emailHash)
                 .",".$this->db->escape($passwordHash)
                 .",".$this->db->escape($token)
+                .",NOW()"
                 .",NOW())"
             );
             
@@ -125,12 +153,23 @@ class UserData extends CI_Model {
     
     function sendConfirmationEmail($email, $token, $confirmEmailURL) {
         $this->load->model('awsses');
+        $this->load->database();
         
-        $to = $email;
-        $subject = "BtcIdea: Confirm Your Email Address";
-        $message = "To confirm your email address, please go to " . $confirmEmailURL . "?email=" . $email . "&token=" . $token;
-    
-        $this->awsses->sendEmail($to, $subject, $message);
+        $email = strtolower($email);
+
+        $results = $this->db->query("SELECT * FROM tbl_users WHERE"
+            . " EmailAddressHash = " . $this->db->escape(hash("sha256", $email))
+            . " AND Token = " . $this->db->escape($token)
+            . " AND IsConfirmed = 0"
+        );
+
+        if($results->num_rows() !== 0) {
+            $to = $email;
+            $subject = "BtcIdea: Confirm Your Email Address";
+            $message = "To confirm your email address, please go to " . $confirmEmailURL . "?email=" . $email . "&token=" . $token;
+        
+            $this->awsses->sendEmail($to, $subject, $message);
+        }
     }
 	
 	function login($email, $passwordPlainText) {

@@ -78,7 +78,7 @@ class Site extends CI_Controller
 			
 			if(!$error)	return redirect($after);
 			else if($error == "Login credentials are invalid") {
-				$error .= ".<br />Forgot your password? <a href='/site/fyp?email=" . $email . "'>Generate a new one.</a>";
+				$error .= ".<br />Forgot your password? <a href='/site/fyp?email=" . $email . "'>Generate a new one</a>";
 			}
             else if($error == "You must confirm this email address to log in.") {
                 $error .= "<br /><a href='/site/resendconfirmationemail?email=" . $email . "'>Resend confirmation email</a>";
@@ -182,6 +182,9 @@ class Site extends CI_Controller
 				
 				return redirect('/account');
 			}
+            else if($error == "This password recovery request has expired" || $error == "The email address or token is invalid") {
+                $error .= ".<br /><a href='/site/fyp?email=" . $email . "'>Request a new password</a>";
+            }
 		}
         
         // initial page load or error resetting password
