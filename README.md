@@ -17,5 +17,9 @@ Set the following environment variables on the web server that will be hosting B
 - **MYSQLCONNSTR_BtcDbConnection** - The connection string for the MySQL server, in the format *Database=database-name;Data Source=MySQL-server-hostname-or-IP;User Id=username;Password=password*
 - **CUSTOMCONNSTR_AwsSesSmtp** - SMTP credentials with access to the AWS SES service, in the format *{"SMTP_Username": "username-goes-here", "SMTP_Password": "password-goes-here"}*
 
+### Folder Structure
+- The site folder contains the BtcIdea website source code
+- The sql folder contains the database schema for the BtcIdea MySQL database
+
 ### License
 This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. You can read the full license [here](http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode) or a human-readable version [here](http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en_US).
