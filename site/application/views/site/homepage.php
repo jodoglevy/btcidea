@@ -1,13 +1,3 @@
-<?php ?>
-<!DOCTYPE html> 
-<html lang="en"> 
-<head> 
-<meta charset="utf-8"> 
-<title>Btc Idea</title> 
-<meta name="description" content="">
-<meta name="keywords" content="" />
-<link href="/css/bootstrap.min.css" rel="stylesheet">
-</head>
 <?php echo $header; ?>
     <div class="container">
       <!-- Main hero unit for a primary marketing message or call to action -->
@@ -53,6 +43,4 @@
       </footer>
 
     </div> <!-- /container -->
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <?php echo $footer; ?>
-</html>

@@ -7,7 +7,7 @@ class Site extends CI_Controller
         $this->load->model('sitedata');
         
 		$this->load->view('site/homepage', array(
-			'header' => $this->sitedata->header(),
+			'header' => $this->sitedata->header("Home"),
 			'footer' => $this->sitedata->footer()
 		));
     }
@@ -17,7 +17,7 @@ class Site extends CI_Controller
         $this->load->model('sitedata');
         
 		$this->load->view('site/contact', array(
-			'header' => $this->sitedata->header(),
+			'header' => $this->sitedata->header("Contact Us"),
 			'footer' => $this->sitedata->footer()
 		));
     }
@@ -27,7 +27,7 @@ class Site extends CI_Controller
         $this->load->model('sitedata');
         
 		$this->load->view('site/terms', array(
-			'header' => $this->sitedata->header(),
+			'header' => $this->sitedata->header("Terms of Use"),
 			'footer' => $this->sitedata->footer()
 		));
     }
@@ -37,7 +37,7 @@ class Site extends CI_Controller
         $this->load->model('sitedata');
         
 		$this->load->view('site/privacy', array(
-			'header' => $this->sitedata->header(),
+			'header' => $this->sitedata->header("Privacy Policy"),
 			'footer' => $this->sitedata->footer()
 		));
     }
@@ -47,7 +47,7 @@ class Site extends CI_Controller
         $this->load->model('sitedata');
         
 		$this->load->view('site/about', array(
-			'header' => $this->sitedata->header(),
+			'header' => $this->sitedata->header("About"),
 			'footer' => $this->sitedata->footer()
 		));
     }
@@ -91,7 +91,7 @@ class Site extends CI_Controller
 			'email' => $email,
 			'error' => $error,
 			'after' => $after,
-			'header' => $this->sitedata->header(),
+			'header' => $this->sitedata->header("Log In"),
 			'footer' => $this->sitedata->footer()
 		));
 	}
@@ -118,6 +118,8 @@ class Site extends CI_Controller
         $password = $this->input->post('password');
 		$password2 = $this->input->post('password2');
 		
+        $pageTitle = "Sign Up";
+        
         $error = NULL;
         
 		if($email) {
@@ -133,7 +135,7 @@ class Site extends CI_Controller
 			if(!$error) {
 				return $this->load->view('site/confirmemailsent', array(
 					'email' => $email,
-					'header' => $this->sitedata->header(),
+					'header' => $this->sitedata->header($pageTitle),
 					'footer' => $this->sitedata->footer()
 				));
 			}
@@ -144,7 +146,7 @@ class Site extends CI_Controller
 		$this->load->view('site/register', array(
 			'email' => $email,
 			'error' => $error,
-			'header' => $this->sitedata->header(),
+			'header' => $this->sitedata->header($pageTitle),
 			'footer' => $this->sitedata->footer()
 		));
 	}
@@ -196,7 +198,7 @@ class Site extends CI_Controller
             'token' => $token,
             'email' => $email,
             'error' => $error,
-            'header' => $this->sitedata->header(),
+            'header' => $this->sitedata->header("Reset Your Password"),
             'footer' => $this->sitedata->footer()
         ));
 	}
@@ -210,6 +212,8 @@ class Site extends CI_Controller
 		
 		$email = $this->input->post('email', TRUE);
 		
+        $pageTitle = "Forgot Your Password";
+        
         $error = NULL;
         
 		if($email) {
@@ -223,7 +227,7 @@ class Site extends CI_Controller
 			if(!$error) {
 				return $this->load->view('site/fypsent', array(
 					'email' => $email,
-					'header' => $this->sitedata->header(),
+					'header' => $this->sitedata->header($pageTitle),
 					'footer' => $this->sitedata->footer()
 				));
 			}
@@ -239,7 +243,7 @@ class Site extends CI_Controller
         $this->load->view('site/fyp', array(
             'email' => $email,
             'error' => $error,
-            'header' => $this->sitedata->header(),
+            'header' => $this->sitedata->header($pageTitle),
             'footer' => $this->sitedata->footer()
         ));
 	}
@@ -277,7 +281,7 @@ class Site extends CI_Controller
 			
             return $this->load->view('site/confirmemailsent', array(
                 'email' => $email,
-                'header' => $this->sitedata->header(),
+                'header' => $this->sitedata->header("Sign Up"),
                 'footer' => $this->sitedata->footer()
             ));
 		}

@@ -1,7 +1,8 @@
 <?php
 class SiteData extends CI_Model {
-	function header() {
+	function header($pageTitle = "") {
 		$this->load->model('userdata');
+		$pageTitle = $pageTitle . " | BtcIdea" ;
 		$username = $this->userdata->getLoggedInUserEmail();
 		
 		if($username) {
@@ -12,32 +13,40 @@ class SiteData extends CI_Model {
 			$userHTML .= '<a class="btn" href="/site/register">Sign Up</a>';
 		}
 		
-		$header = '<body style="background-color: rgb(177, 219, 233)">
-		<div id="main">
-			<div class="navbar navbar-fixed-top">
-			  <div class="navbar-inner">
-				<div class="container-fluid">
-				  <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				  </a>
-				  <a class="brand" style="color: ivory"; href="/"><img style="vertical-align:top; padding-right:7px; padding-top: 2px;" src="/img/logo-black-24x18.png"/>Btc Idea</a>
-				  <div class="btn-group pull-right">' . $userHTML . '</div>
-				  <div class="nav-collapse">
-					<ul class="nav">
-					  <li><a href="/">Home</a></li>
-					  <li><a href="/site/about">About</a></li>
-					  <li><a href="/site/pricing">Pricing</a></li>
-					  <li><a href="/site/contact">Contact</a></li>
-					  <li style="padding-top: 9px; padding-left: 300px;"><!-- Facebook like button here --></li>
-					  <li style="padding-top: 9px;"><!-- Twitter button goes here --></li>
-					</ul>
-				  </div><!--/.nav-collapse -->
+		$header = '
+		<!DOCTYPE html> 
+		<html lang="en"> 
+		<head> 
+		<meta charset="utf-8"> 
+		<title>' . $pageTitle . '</title> 
+		<link href="/static/css/bootstrap.min.css" rel="stylesheet">
+		</head>
+		<body style="background-color: rgb(177, 219, 233)">
+			<div id="main">
+				<div class="navbar navbar-fixed-top">
+				  <div class="navbar-inner">
+					<div class="container-fluid">
+					  <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					  </a>
+					  <a class="brand" style="color: ivory"; href="/"><img style="vertical-align:top; padding-right:7px; padding-top: 2px;" src="/static/img/logo-black-24x18.png"/>Btc Idea</a>
+					  <div class="btn-group pull-right">' . $userHTML . '</div>
+					  <div class="nav-collapse">
+						<ul class="nav">
+						  <li><a href="/">Home</a></li>
+						  <li><a href="/site/about">About</a></li>
+						  <li><a href="/site/pricing">Pricing</a></li>
+						  <li><a href="/site/contact">Contact</a></li>
+						  <li style="padding-top: 9px; padding-left: 300px;"><!-- Facebook like button here --></li>
+						  <li style="padding-top: 9px;"><!-- Twitter button goes here --></li>
+						</ul>
+					  </div><!--/.nav-collapse -->
+					</div>
+				  </div>
 				</div>
-			  </div>
 			</div>
-		</div>
 		<br /><br />';
 			
 		return $header;
@@ -45,6 +54,7 @@ class SiteData extends CI_Model {
 	
 	function footer() {
 		$footer = "
+		<script type=\"text/javascript\" src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js\"></script>
 		<script type=\"text/javascript\">
 			!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=\"//platform.twitter.com/widgets.js\";fjs.parentNode.insertBefore(js,fjs);}}(document,\"script\",\"twitter-wjs\");
 		</script>
@@ -71,7 +81,8 @@ class SiteData extends CI_Model {
 		  })();
 		</script>
 		
-		</body>";
+		</body>
+		</html>";
 		return $footer;
 	}
 }
